@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MJ Recovery">
+<title>MJ Recovery</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --card: #11111c;
+  --border: #1c1c2e;
+  --accent: #00e5a0;
+  --accent2: #ff6b35;
+  --accent3: #4d9fff;
+  --text: #e8e8f2;
+  --muted: #5a5a72;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:0 0 90px;}
+
+/* HEADER */
+.app-header{
+background:linear-gradient(180deg,#0e0e1a 0%,transparent 100%);
+padding:40px 20px 16px;
+text-align:center;
+position:sticky;top:0;z-index:10;
+backdrop-filter:blur(12px);
+}
+.app-header h1{
+font-family:‘Syne’,sans-serif;font-size:1.6rem;font-weight:800;
+background:linear-gradient(135deg,var(–accent),var(–accent3));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+letter-spacing:-0.5px;
+}
+.app-header p{color:var(–muted);font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+
+/* COUNTDOWN */
+.countdown{
+margin:16px;
+background:linear-gradient(135deg,#ff6b3518,#ff6b3506);
+border:1px solid var(–accent2);border-radius:18px;padding:18px 20px;
+display:flex;align-items:center;gap:16px;
+}
+.cd-num{font-family:‘Syne’,sans-serif;font-size:2.8rem;font-weight:800;color:var(–accent2);line-height:1;width:80px;text-align:center;}
+.cd-right{}
+.cd-label{font-size:0.62rem;color:var(–muted);letter-spacing:2px;text-transform:uppercase;}
+.cd-date{font-size:0.8rem;color:var(–accent2);margin-top:4px;font-weight:500;}
+.cd-sub{font-size:0.62rem;color:var(–muted);margin-top:3px;}
+
+/* STATS */
+.stats{display:flex;gap:10px;margin:0 16px 16px;}
+.stat{flex:1;background:var(–card);border:1px solid var(–border);border-radius:14px;padding:12px;text-align:center;}
+.stat-n{font-family:‘Syne’,sans-serif;font-size:1.6rem;font-weight:800;color:var(–accent);}
+.stat-l{font-size:0.55rem;color:var(–muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.bar-wrap{margin:0 16px 20px;background:var(–border);border-radius:99px;height:5px;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(–accent),var(–accent3));border-radius:99px;transition:width 0.6s ease;}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin:0 16px 16px;}
+.tab{
+flex:1;padding:10px 0;text-align:center;
+border:1px solid var(–border);border-radius:12px;
+font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;
+cursor:pointer;color:var(–muted);background:var(–card);transition:all 0.2s;
+}
+.tab.active{border-color:var(–accent);color:var(–accent);background:#00e5a012;}
+.panel{display:none;padding:0 16px;}
+.panel.active{display:block;}
+
+/* EXERCISE CARDS */
+.sec-label{
+font-family:‘Syne’,sans-serif;font-size:0.58rem;font-weight:700;
+letter-spacing:3px;text-transform:uppercase;
+color:var(–accent2);margin:16px 0 10px;
+}
+.ex-card{
+background:var(–card);border:1px solid var(–border);
+border-radius:16px;margin-bottom:10px;overflow:hidden;
+transition:border-color 0.2s;
+}
+.ex-card.checked{border-color:#00e5a030;}
+.ex-top{
+display:flex;align-items:center;gap:12px;
+padding:14px 16px;cursor:pointer;
+}
+.chk{
+width:26px;height:26px;border-radius:8px;
+border:2px solid var(–muted);flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+transition:all 0.25s;
+}
+.chk.on{background:var(–accent);border-color:var(–accent);}
+.chk.on::after{content:‘✓’;color:#000;font-size:14px;font-weight:800;}
+.ex-info{flex:1;}
+.ex-name{font-size:0.88rem;color:var(–text);font-weight:500;transition:all 0.2s;}
+.ex-name.done{color:var(–muted);text-decoration:line-through;}
+.ex-dose{font-size:0.62rem;color:var(–muted);margin-top:2px;}
+.arr{color:var(–muted);font-size:0.65rem;transition:transform 0.25s;flex-shrink:0;}
+.arr.open{transform:rotate(180deg);}
+
+/* EXERCISE BODY */
+.ex-body{display:none;border-top:1px solid var(–border);}
+.ex-body.open{display:block;}
+
+/* SVG ANIMATION AREA */
+.anim-wrap{
+background:#0a0a14;
+padding:20px;
+display:flex;justify-content:center;align-items:center;
+border-bottom:1px solid var(–border);
+min-height:140px;
+}
+.anim-wrap svg{overflow:visible;}
+
+.ex-steps{padding:14px 16px 16px;}
+.step{
+display:flex;gap:10px;padding:7px 0;
+border-bottom:1px solid var(–border);
+font-size:0.7rem;color:var(–text);line-height:1.6;
+}
+.step:last-child{border-bottom:none;}
+.step-n{
+width:20px;height:20px;border-radius:50%;
+background:#00e5a018;color:var(–accent);
+font-size:0.58rem;font-weight:700;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;margin-top:2px;
+}
+.why{
+margin-top:10px;background:#00b8ff0e;border:1px solid #00b8ff30;
+border-radius:10px;padding:10px 12px;
+font-size:0.68rem;color:var(–accent3);line-height:1.6;
+}
+.why-label{font-size:0.55rem;letter-spacing:2px;text-transform:uppercase;color:var(–accent3);margin-bottom:3px;opacity:0.7;}
+
+/* MILESTONES */
+.ms{
+background:var(–card);border:1px solid var(–border);
+border-radius:14px;padding:14px 16px;margin-bottom:10px;
+display:flex;gap:14px;
+}
+.ms.done{opacity:0.55;border-color:#00e5a025;}
+.ms.now{border-color:var(–accent2);}
+.ms-icon{font-size:1.5rem;flex-shrink:0;padding-top:2px;}
+.ms-title{font-family:‘Syne’,sans-serif;font-size:0.85rem;font-weight:700;margin-bottom:2px;}
+.ms-date{font-size:0.62rem;color:var(–accent2);margin-bottom:5px;}
+.ms-desc{font-size:0.68rem;color:var(–muted);line-height:1.7;}
+.tag{display:inline-block;font-size:0.52rem;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:99px;margin-top:7px;}
+.t-done{background:#00e5a015;color:var(–accent);border:1px solid var(–accent);}
+.t-now{background:#ff6b3515;color:var(–accent2);border:1px solid var(–accent2);}
+.t-soon{background:#4d9fff15;color:var(–accent3);border:1px solid var(–accent3);}
+
+/* INSURANCE */
+.icard{background:var(–card);border:1px solid var(–border);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.icard-title{font-family:‘Syne’,sans-serif;font-size:0.82rem;font-weight:700;margin-bottom:10px;}
+.irow{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(–border);font-size:0.7rem;line-height:1.5;}
+.irow:last-child{border-bottom:none;}
+.ikey{color:var(–muted);width:120px;flex-shrink:0;}
+.ival{color:var(–text);}
+.ival.g{color:var(–accent);}
+.ival.o{color:var(–accent2);}
+.script{
+background:#4d9fff0e;border:1px solid #4d9fff30;
+border-radius:12px;padding:14px 16px;margin-bottom:10px;
+font-size:0.7rem;color:var(–text);line-height:1.8;
+}
+.script strong{font-size:0.58rem;letter-spacing:2px;text-transform:uppercase;color:var(–accent3);display:block;margin-bottom:6px;}
+
+/* INSTALL */
+.install-card{background:var(–card);border:1px solid var(–border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
+.install-header{background:linear-gradient(135deg,#00e5a015,#4d9fff10);padding:16px;border-bottom:1px solid var(–border);}
+.install-header h3{font-family:‘Syne’,sans-serif;font-size:0.9rem;font-weight:700;}
+.install-header p{font-size:0.65rem;color:var(–muted);margin-top:3px;}
+.install-steps{padding:14px 16px;}
+.istep{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(–border);align-items:flex-start;}
+.istep:last-child{border-bottom:none;}
+.istep-n{
+width:28px;height:28px;border-radius:50%;
+background:linear-gradient(135deg,var(–accent),var(–accent3));
+color:#000;font-size:0.7rem;font-weight:800;
+display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.istep-text{font-size:0.72rem;color:var(–text);line-height:1.7;padding-top:4px;}
+.istep-text em{color:var(–accent);font-style:normal;font-weight:500;}
+.os-badge{
+display:inline-block;font-size:0.55rem;letter-spacing:1px;text-transform:uppercase;
+padding:2px 8px;border-radius:99px;margin-bottom:8px;
+}
+.ios{background:#4d9fff20;color:var(–accent3);border:1px solid var(–accent3);}
+.android{background:#00e5a015;color:var(–accent);border:1px solid var(–accent);}
+
+.reset-btn{
+display:block;width:100%;margin-top:16px;padding:13px;
+background:transparent;border:1px solid var(–border);border-radius:12px;
+color:var(–muted);font-family:‘DM Mono’,monospace;
+font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;
+}
+.reset-btn:active{border-color:var(–accent2);color:var(–accent2);}
+
+/* –– ANIMATIONS –– */
+
+/* Ankle Alphabet */
+@keyframes ankleRotate {
+0%{transform:rotate(-30deg);}25%{transform:rotate(20deg);}50%{transform:rotate(10deg) translateY(-8px);}75%{transform:rotate(-20deg) translateY(4px);}100%{transform:rotate(-30deg);}
+}
+.anim-ankle-foot{transform-origin:50px 20px;animation:ankleRotate 2.5s ease-in-out infinite;}
+@keyframes letterTrace{
+0%,100%{opacity:0;}10%,90%{opacity:1;}50%{opacity:0.6;}
+}
+.letter-trail{animation:letterTrace 2.5s ease-in-out infinite;}
+
+/* Towel Scrunch */
+@keyframes toeCurl{
+0%,100%{transform:scaleY(1) translateY(0);}40%{transform:scaleY(0.7) translateY(4px);}60%{transform:scaleY(0.7) translateY(4px);}
+}
+@keyframes towelMove{
+0%,100%{transform:translateX(0);}40%{transform:translateX(8px);}60%{transform:translateX(8px);}
+}
+.anim-toes{transform-origin:bottom center;animation:toeCurl 1.8s ease-in-out infinite;}
+.anim-towel{animation:towelMove 1.8s ease-in-out infinite;}
+
+/* Calf Raise */
+@keyframes calfRise{
+0%,100%{transform:translateY(0);}30%,70%{transform:translateY(-18px);}
+}
+@keyframes heelLift{
+0%,100%{transform:translateY(0);}30%,70%{transform:translateY(-18px);}
+}
+.anim-body{animation:calfRise 2.2s ease-in-out infinite;}
+.anim-heel{transform-origin:60px 80px;animation:heelLift 2.2s ease-in-out infinite;}
+
+/* Heel Walk */
+@keyframes heelStep1{
+0%,100%{transform:translateX(0) translateY(0);}25%{transform:translateX(12px) translateY(-8px);}50%{transform:translateX(24px) translateY(0);}
+}
+@keyframes heelStep2{
+0%{transform:translateX(0) translateY(0);}50%,100%{transform:translateX(0) translateY(0);}75%{transform:translateX(-12px) translateY(-8px);}
+}
+@keyframes toeUp1{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-25deg);}50%{transform:rotate(-25deg);}75%{transform:rotate(0deg);}}
+@keyframes toeUp2{0%,50%{transform:rotate(0deg);}75%{transform:rotate(-25deg);}100%{transform:rotate(-25deg);}}
+.hw-leg1{animation:heelStep1 1.6s ease-in-out infinite;}
+.hw-leg2{animation:heelStep2 1.6s ease-in-out infinite;}
+.hw-toe1{transform-origin:20px 0;animation:toeUp1 1.6s ease-in-out infinite;}
+.hw-toe2{transform-origin:20px 0;animation:toeUp2 1.6s ease-in-out infinite;}
+
+/* Balance */
+@keyframes balanceWobble{
+0%,100%{transform:rotate(0deg);}20%{transform:rotate(3deg);}40%{transform:rotate(-2deg);}60%{transform:rotate(2deg);}80%{transform:rotate(-3deg);}
+}
+@keyframes armBalance{
+0%,100%{transform:rotate(10deg);}50%{transform:rotate(-10deg);}
+}
+@keyframes armBalance2{
+0%,100%{transform:rotate(-10deg);}50%{transform:rotate(10deg);}
+}
+.bal-body{transform-origin:60px 60px;animation:balanceWobble 2s ease-in-out infinite;}
+.bal-arm1{transform-origin:60px 55px;animation:armBalance 2s ease-in-out infinite;}
+.bal-arm2{transform-origin:60px 55px;animation:armBalance2 2s ease-in-out infinite;}
+</style>
+
+</head>
+<body>
+
+<div class="app-header">
+  <h1>MJ Recovery</h1>
+  <p>Calcaneus · 98-Day Rehab Plan</p>
+</div>
+
+<div class="countdown">
+  <div class="cd-num" id="daysLeft">--</div>
+  <div class="cd-right">
+    <div class="cd-label">Days Until</div>
+    <div class="cd-date">Full Insurance Coverage</div>
+    <div class="cd-sub">July 15, 2026 · Preexisting Ends</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="sDone">0</div><div class="stat-l">Days Done</div></div>
+  <div class="stat"><div class="stat-n" id="sStreak">0</div><div class="stat-l">Streak</div></div>
+  <div class="stat"><div class="stat-n" id="sPct">0%</div><div class="stat-l">Progress</div></div>
+</div>
+<div class="bar-wrap"><div class="bar-fill" id="mainBar" style="width:0%"></div></div>
+
+<div class="tabs">
+  <div class="tab active" onclick="tab('ex')">Exercises</div>
+  <div class="tab" onclick="tab('ms')">Timeline</div>
+  <div class="tab" onclick="tab('ins')">Insurance</div>
+  <div class="tab" onclick="tab('install')">Install App</div>
+</div>
+
+<!-- EXERCISES -->
+
+<div class="panel active" id="panel-ex">
+
+  <div class="sec-label">🌅 Morning Session</div>
+
+  <!-- E1: Ankle Alphabet -->
+
+  <div class="ex-card" id="card-e1">
+    <div class="ex-top" onclick="toggleCard('e1')">
+      <div class="chk" id="chk-e1" onclick="checkEx(event,'e1')"></div>
+      <div class="ex-info">
+        <div class="ex-name" id="nm-e1">Ankle Alphabet</div>
+        <div class="ex-dose">A→Z with big toe · 2 rounds · Both feet</div>
+      </div>
+      <div class="arr" id="arr-e1">▼</div>
+    </div>
+    <div class="ex-body" id="body-e1">
+      <div class="anim-wrap">
+        <svg width="160" height="120" viewBox="0 0 160 120">
+          <!-- Chair/seat -->
+          <rect x="20" y="85" width="60" height="6" rx="3" fill="#1e1e2e"/>
+          <line x1="25" y1="91" x2="25" y2="110" stroke="#1e1e2e" stroke-width="4" stroke-linecap="round"/>
+          <line x1="75" y1="91" x2="75" y2="110" stroke="#1e1e2e" stroke-width="4" stroke-linecap="round"/>
+          <!-- Leg sitting -->
+          <rect x="35" y="65" width="14" height="25" rx="7" fill="#4a3728"/>
+          <!-- Lower leg hanging + foot rotating -->
+          <g class="anim-ankle-foot">
+            <rect x="38" y="88" width="10" height="22" rx="5" fill="#4a3728"/>
+            <!-- Foot -->
+            <ellipse cx="50" cy="112" rx="16" ry="7" fill="#5a4535"/>
+            <!-- Toes -->
+            <circle cx="38" cy="108" r="3" fill="#6a5545"/>
+            <circle cx="43" cy="106" r="3" fill="#6a5545"/>
+            <circle cx="49" cy="106" r="3" fill="#6a5545"/>
+            <circle cx="55" cy="107" r="3" fill="#6a5545"/>
+            <circle cx="60" cy="109" r="3" fill="#6a5545"/>
+          </g>
+          <!-- Letter trace path -->
+          <g class="letter-trail">
+            <path d="M100 40 L110 70 M100 40 L120 40 M104 55 L116 55" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8"/>
+          </g>
+          <!-- Arrow showing rotation -->
+          <path d="M75 100 Q90 80 105 90" stroke="#00e5a060" stroke-width="1.5" stroke-dasharray="3,3" fill="none"/>
+          <text x="105" y="115" fill="#00e5a080" font-size="9" font-family="monospace">A→Z</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Sit in a chair. Lift your foot completely off the floor.</div></div>
+        <div class="step"><div class="step-n">2</div><div>Use your big toe as a pen. Write every letter A to Z in the air — make the letters BIG. Move your whole ankle, not just your toe.</div></div>
+        <div class="step"><div class="step-n">3</div><div>Go slowly. Feel your ankle rotating in every direction.</div></div>
+        <div class="step"><div class="step-n">4</div><div>Switch feet. Do 2 full rounds on each foot.</div></div>
+        <div class="why"><div class="why-label">Why this works</div>Forces your ankle through every plane of motion — up, down, left, right, diagonal. Your calcaneus controls side-to-side movement and this directly retrains it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E2: Towel Scrunch -->
+
+  <div class="ex-card" id="card-e2">
+    <div class="ex-top" onclick="toggleCard('e2')">
+      <div class="chk" id="chk-e2" onclick="checkEx(event,'e2')"></div>
+      <div class="ex-info">
+        <div class="ex-name" id="nm-e2">Towel Scrunches</div>
+        <div class="ex-dose">3 sets × 10 reps · Each foot</div>
+      </div>
+      <div class="arr" id="arr-e2">▼</div>
+    </div>
+    <div class="ex-body" id="body-e2">
+      <div class="anim-wrap">
+        <svg width="160" height="120" viewBox="0 0 160 120">
+          <!-- Floor -->
+          <rect x="10" y="95" width="140" height="4" rx="2" fill="#1e1e2e"/>
+          <!-- Towel -->
+          <g class="anim-towel">
+            <rect x="50" y="85" width="60" height="10" rx="3" fill="#2a2a4a" stroke="#3a3a6a" stroke-width="1"/>
+            <line x1="55" y1="90" x2="105" y2="90" stroke="#4a4a7a" stroke-width="1"/>
+            <line x1="55" y1="88" x2="105" y2="88" stroke="#3a3a6a" stroke-width="0.5"/>
+          </g>
+          <!-- Foot -->
+          <g>
+            <!-- Heel -->
+            <ellipse cx="80" cy="82" rx="18" ry="10" fill="#5a4535"/>
+            <!-- Toes curling -->
+            <g class="anim-toes">
+              <ellipse cx="63" cy="78" rx="6" ry="8" fill="#5a4535"/>
+              <circle cx="56" cy="74" r="4" fill="#6a5545"/>
+              <circle cx="62" cy="71" r="4" fill="#6a5545"/>
+              <circle cx="69" cy="70" r="4" fill="#6a5545"/>
+              <circle cx="76" cy="71" r="4" fill="#6a5545"/>
+              <circle cx="82" cy="73" r="3.5" fill="#6a5545"/>
+            </g>
+          </g>
+          <!-- Arrow -->
+          <path d="M95 75 Q105 65 110 75" stroke="#ff6b3570" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+          <text x="112" y="72" fill="#ff6b3590" font-size="8" font-family="monospace">curl!</text>
+          <!-- Repeat dots -->
+          <text x="30" y="50" fill="#00e5a060" font-size="22" font-family="monospace">×10</text>
+          <text x="30" y="65" fill="#00e5a040" font-size="10" font-family="monospace">3 sets</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Place a small towel flat on the floor in front of your chair.</div></div>
+        <div class="step"><div class="step-n">2</div><div>Put your bare foot on the towel. Sit up straight.</div></div>
+        <div class="step"><div class="step-n">3</div><div>Curl your toes downward, gripping and pulling the towel toward you. Hold 2 seconds, then release flat.</div></div>
+        <div class="step"><div class="step-n">4</div><div>10 scrunches = 1 set. Rest 30 seconds between sets. Do 3 sets per foot.</div></div>
+        <div class="why"><div class="why-label">Why this works</div>Strengthens the intrinsic arch muscles that directly support the calcaneus when you walk. Weak arch = your heel takes more impact = more pain and limp.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E3: Calf Raises -->
+
+  <div class="ex-card" id="card-e3">
+    <div class="ex-top" onclick="toggleCard('e3')">
+      <div class="chk" id="chk-e3" onclick="checkEx(event,'e3')"></div>
+      <div class="ex-info">
+        <div class="ex-name" id="nm-e3">Calf Raises</div>
+        <div class="ex-dose">3 × 10 reps · Slow · Hold chair</div>
+      </div>
+      <div class="arr" id="arr-e3">▼</div>
+    </div>
+    <div class="ex-body" id="body-e3">
+      <div class="anim-wrap">
+        <svg width="160" height="130" viewBox="0 0 160 130">
+          <!-- Chair back (for holding) -->
+          <rect x="110" y="30" width="8" height="70" rx="4" fill="#1e1e2e"/>
+          <rect x="105" y="30" width="18" height="6" rx="3" fill="#1e1e2e"/>
+          <!-- Person body rising -->
+          <g class="anim-body">
+            <!-- Head -->
+            <circle cx="70" cy="28" r="12" fill="#4a3728"/>
+            <!-- Body -->
+            <rect x="60" y="40" width="20" height="32" rx="8" fill="#3a3a5a"/>
+            <!-- Arms holding chair -->
+            <line x1="80" y1="52" x2="108" y2="56" stroke="#3a3a5a" stroke-width="6" stroke-linecap="round"/>
+            <!-- Legs -->
+            <rect x="62" y="70" width="10" height="28" rx="5" fill="#4a3728"/>
+            <rect x="74" y="70" width="10" height="28" rx="5" fill="#4a3728"/>
+          </g>
+          <!-- Heels lifting -->
+          <g class="anim-heel">
+            <!-- Floor feet -->
+            <ellipse cx="67" cy="105" rx="12" ry="5" fill="#5a4535"/>
+            <ellipse cx="79" cy="105" rx="12" ry="5" fill="#5a4535"/>
+          </g>
+          <!-- Floor -->
+          <rect x="20" y="108" width="120" height="4" rx="2" fill="#1e1e2e"/>
+          <!-- Arrow up -->
+          <path d="M35 85 L35 55" stroke="#00e5a060" stroke-width="2" marker-end="url(#arr)" stroke-dasharray="4,3"/>
+          <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#00e5a060"/></marker></defs>
+          <text x="15" y="50" fill="#00e5a070" font-size="8" font-family="monospace">UP↑</text>
+          <text x="12" y="95" fill="#ff6b3570" font-size="8" font-family="monospace">slow↓</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Stand behind a chair. Hold the back lightly — just for balance, don't lean on it.</div></div>
+        <div class="step"><div class="step-n">2</div><div>Slowly rise up onto your toes — count 2 seconds going UP.</div></div>
+        <div class="step"><div class="step-n">3</div><div>Hold at the top for 1 second. Feel the stretch.</div></div>
+        <div class="step"><div class="step-n">4</div><div>Slowly lower back down — count 3 seconds going DOWN. This slow descent is the most important part.</div></div>
+        <div class="step"><div class="step-n">5</div><div>10 reps = 1 set. Rest 45 seconds. Do 3 sets. Week 3+: try single leg (injured foot only).</div></div>
+        <div class="why"><div class="why-label">Why this works</div>Your Achilles tendon attaches directly to the calcaneus. Weak calves = you compensate by limping. This is the #1 exercise to fix your gait.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E4: Heel Walk -->
+
+  <div class="ex-card" id="card-e4">
+    <div class="ex-top" onclick="toggleCard('e4')">
+      <div class="chk" id="chk-e4" onclick="checkEx(event,'e4')"></div>
+      <div class="ex-info">
+        <div class="ex-name" id="nm-e4">Heel Walks</div>
+        <div class="ex-dose">2 minutes · Toes always up · Around room</div>
+      </div>
+      <div class="arr" id="arr-e4">▼</div>
+    </div>
+    <div class="ex-body" id="body-e4">
+      <div class="anim-wrap">
+        <svg width="160" height="120" viewBox="0 0 160 120">
+          <!-- Floor -->
+          <rect x="10" y="95" width="140" height="4" rx="2" fill="#1e1e2e"/>
+          <!-- Left leg stepping -->
+          <g class="hw-leg1">
+            <rect x="50" y="55" width="12" height="30" rx="6" fill="#4a3728"/>
+            <ellipse cx="56" cy="90" rx="15" ry="7" fill="#5a4535"/>
+            <g class="hw-toe1">
+              <ellipse cx="46" cy="87" rx="8" ry="5" fill="#6a5545"/>
+            </g>
+          </g>
+          <!-- Right leg stepping -->
+          <g class="hw-leg2">
+            <rect x="90" y="55" width="12" height="30" rx="6" fill="#4a3728"/>
+            <ellipse cx="96" cy="90" rx="15" ry="7" fill="#5a4535"/>
+            <g class="hw-toe2">
+              <ellipse cx="86" cy="87" rx="8" ry="5" fill="#6a5545"/>
+            </g>
+          </g>
+          <!-- Direction arrows -->
+          <path d="M20 75 L40 75" stroke="#00e5a050" stroke-width="2" stroke-dasharray="3,3"/>
+          <path d="M120 75 L140 75" stroke="#00e5a050" stroke-width="2" stroke-dasharray="3,3"/>
+          <!-- Label -->
+          <text x="52" y="40" fill="#00e5a080" font-size="9" font-family="monospace">toes UP↑</text>
+          <text x="48" y="52" fill="#00e5a050" font-size="8" font-family="monospace">heels only</text>
+          <!-- Timer -->
+          <text x="115" y="55" fill="#ff6b3580" font-size="18" font-family="'Syne',sans-serif" font-weight="800">2m</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Stand up straight near a wall (in case you need balance).</div></div>
+        <div class="step"><div class="step-n">2</div><div>Lift the front of both feet off the ground. Toes pointing UP in the air.</div></div>
+        <div class="step"><div class="step-n">3</div><div>Walk around your room using ONLY your heels. Go slowly and controlled.</div></div>
+        <div class="step"><div class="step-n">4</div><div>Keep toes up the entire time. Do this for 2 full minutes without stopping.</div></div>
+        <div class="why"><div class="why-label">Why this works</div>Directly loads your calcaneus bone with controlled weight. Builds bone density and strengthens the muscles around the fracture site. You'll feel it working immediately.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E5: Single Leg Balance -->
+
+  <div class="ex-card" id="card-e5">
+    <div class="ex-top" onclick="toggleCard('e5')">
+      <div class="chk" id="chk-e5" onclick="checkEx(event,'e5')"></div>
+      <div class="ex-info">
+        <div class="ex-name" id="nm-e5">Single Leg Balance</div>
+        <div class="ex-dose">30 sec × 3 · Injured foot · Most important!</div>
+      </div>
+      <div class="arr" id="arr-e5">▼</div>
+    </div>
+    <div class="ex-body" id="body-e5">
+      <div class="anim-wrap">
+        <svg width="160" height="130" viewBox="0 0 160 130">
+          <!-- Wall -->
+          <rect x="10" y="20" width="8" height="90" rx="2" fill="#1e1e2e"/>
+          <!-- Person balancing -->
+          <g class="bal-body">
+            <!-- Head -->
+            <circle cx="80" cy="30" r="12" fill="#4a3728"/>
+            <!-- Body -->
+            <rect x="72" y="42" width="16" height="30" rx="7" fill="#3a3a5a"/>
+            <!-- Arms out for balance -->
+            <g class="bal-arm1"><line x1="72" y1="55" x2="40" y2="50" stroke="#3a3a5a" stroke-width="7" stroke-linecap="round"/></g>
+            <g class="bal-arm2"><line x1="88" y1="55" x2="120" y2="50" stroke="#3a3a5a" stroke-width="7" stroke-linecap="round"/></g>
+            <!-- Standing leg -->
+            <rect x="76" y="72" width="10" height="30" rx="5" fill="#4a3728"/>
+            <!-- Foot on ground -->
+            <ellipse cx="81" cy="106" rx="14" ry="6" fill="#5a4535"/>
+            <!-- Raised leg -->
+            <line x1="74" y1="80" x2="60" y2="95" stroke="#4a3728" stroke-width="9" stroke-linecap="round"/>
+            <line x1="60" y1="95" x2="50" y2="85" stroke="#4a3728" stroke-width="8" stroke-linecap="round"/>
+          </g>
+          <!-- Floor -->
+          <rect x="20" y="109" width="120" height="4" rx="2" fill="#1e1e2e"/>
+          <!-- Timer arc -->
+          <circle cx="130" cy="45" r="18" fill="none" stroke="#1e1e2e" stroke-width="4"/>
+          <circle cx="130" cy="45" r="18" fill="none" stroke="#00e5a0" stroke-width="4" stroke-dasharray="56 57" stroke-dashoffset="14" opacity="0.7"/>
+          <text x="124" y="50" fill="#00e5a0" font-size="10" font-family="'Syne',sans-serif" font-weight="800">30s</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Stand near a wall or hold a chair lightly with one finger.</div></div>
+        <div class="step"><div class="step-n">2</div><div>Lift your GOOD foot off the ground. Balance on your INJURED foot only.</div></div>
+        <div class="step"><div class="step-n">3</div><div>Hold for 30 seconds. Rest 20 seconds. Repeat 3 times.</div></div>
+        <div class="step"><div class="step-n">4</div><div>Week 2: Try with eyes closed. Week 4: Try standing on a folded blanket (unstable surface).</div></div>
+        <div class="why"><div class="why-label">⚡ Most important exercise for your limp</div>After 2 years, your brain learned to avoid trusting your injured foot. This exercise directly retrains your nervous system to trust it again. This is why you limp — not just the bone.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-label" style="margin-top:20px">🌙 Evening Session</div>
+
+  <!-- E6-E8 evening repeats -->
+
+  <div class="ex-card" id="card-e6">
+    <div class="ex-top" onclick="toggleCard('e6')">
+      <div class="chk" id="chk-e6" onclick="checkEx(event,'e6')"></div>
+      <div class="ex-info"><div class="ex-name" id="nm-e6">Ankle Alphabet (PM)</div><div class="ex-dose">Same as morning · Before bed works great</div></div>
+      <div class="arr" id="arr-e6">▼</div>
+    </div>
+    <div class="ex-body" id="body-e6">
+      <div class="anim-wrap" style="min-height:80px">
+        <svg width="120" height="70" viewBox="0 0 120 70">
+          <text x="10" y="35" fill="#00e5a0" font-size="28" font-family="'Syne',sans-serif" font-weight="800">A→Z</text>
+          <text x="10" y="55" fill="#00e5a060" font-size="11" font-family="monospace">evening round · 2×</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Same as morning. Sit, lift foot, trace the whole alphabet in the air.</div></div>
+        <div class="step"><div class="step-n">💡</div><div>Best time: while watching something on your phone. You barely notice doing it.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ex-card" id="card-e7">
+    <div class="ex-top" onclick="toggleCard('e7')">
+      <div class="chk" id="chk-e7" onclick="checkEx(event,'e7')"></div>
+      <div class="ex-info"><div class="ex-name" id="nm-e7">Calf Raises (PM)</div><div class="ex-dose">3 × 10 reps · Slow descent</div></div>
+      <div class="arr" id="arr-e7">▼</div>
+    </div>
+    <div class="ex-body" id="body-e7">
+      <div class="anim-wrap" style="min-height:80px">
+        <svg width="120" height="70" viewBox="0 0 120 70">
+          <text x="5" y="38" fill="#00e5a0" font-size="22" font-family="'Syne',sans-serif" font-weight="800">↑ slow ↓</text>
+          <text x="5" y="56" fill="#00e5a060" font-size="11" font-family="monospace">2s up · 3s down</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Same as morning. 2 seconds up, hold 1 second, 3 seconds down.</div></div>
+        <div class="step"><div class="step-n">💡</div><div>Week 3 goal: Do a set on your injured foot only. Use the chair for safety.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ex-card" id="card-e8">
+    <div class="ex-top" onclick="toggleCard('e8')">
+      <div class="chk" id="chk-e8" onclick="checkEx(event,'e8')"></div>
+      <div class="ex-info"><div class="ex-name" id="nm-e8">Single Leg Balance (PM)</div><div class="ex-dose">30 sec × 3 · Don't skip this one</div></div>
+      <div class="arr" id="arr-e8">▼</div>
+    </div>
+    <div class="ex-body" id="body-e8">
+      <div class="anim-wrap" style="min-height:80px">
+        <svg width="120" height="70" viewBox="0 0 120 70">
+          <text x="5" y="38" fill="#00e5a0" font-size="28" font-family="'Syne',sans-serif" font-weight="800">30s×3</text>
+          <text x="5" y="56" fill="#00e5a060" font-size="11" font-family="monospace">injured foot · eyes open</text>
+        </svg>
+      </div>
+      <div class="ex-steps">
+        <div class="step"><div class="step-n">1</div><div>Most important exercise — do not skip the evening round.</div></div>
+        <div class="step"><div class="step-n">💡</div><div>Doing this right before bed helps build muscle memory while you sleep. Seriously.</div></div>
+      </div>
+    </div>
+  </div>
+
+<button class="reset-btn" onclick="resetToday()">↺ Reset Today’s Checkboxes</button>
+
+</div>
+
+<!-- TIMELINE -->
+
+<div class="panel" id="panel-ms">
+  <div class="ms done">
+    <div class="ms-icon">🦴</div>
+    <div><div class="ms-title">Calcaneus Surgery</div><div class="ms-date">November 23, 2023</div><div class="ms-desc">Surgery done. Hardware (plates + screws) placed in your heel bone.</div><span class="tag t-done">Done</span></div>
+  </div>
+  <div class="ms now">
+    <div class="ms-icon">🏥</div>
+    <div><div class="ms-title">Student Health Center</div><div class="ms-date">This Week · April 8–12</div><div class="ms-desc">FREE as a Truman student. Tell them about your 2023 surgery and limp. Ask for X-ray + referral to orthopedics.<br><br>📍 McKinney/Kirk Building<br>📞 (660) 785-4182<br>🕐 Mon–Thu 9AM–5:30PM</div><span class="tag t-now">Do This Now</span></div>
+  </div>
+  <div class="ms">
+    <div class="ms-icon">💪</div>
+    <div><div class="ms-title">Daily Exercises</div><div class="ms-date">April 8 → July 15 · 98 Days</div><div class="ms-desc">8 exercises every day. Morning + evening. This reduces your limp before surgery. Consistency is everything.</div><span class="tag t-now">In Progress</span></div>
+  </div>
+  <div class="ms">
+    <div class="ms-icon">📋</div>
+    <div><div class="ms-title">Follow-up at Student Health</div><div class="ms-date">May–June 2026</div><div class="ms-desc">Go back after 6 weeks. Show progress. Ask them to prepare a referral letter for orthopedics for after July 15th.</div><span class="tag t-soon">Upcoming</span></div>
+  </div>
+  <div class="ms">
+    <div class="ms-icon">🎉</div>
+    <div><div class="ms-title">Insurance Preexisting Ends</div><div class="ms-date">July 15, 2026</div><div class="ms-desc">Your foot is no longer "preexisting." Insurance covers 90% up to $500,000. Book orthopedics the next day.</div><span class="tag t-soon">Key Date</span></div>
+  </div>
+  <div class="ms">
+    <div class="ms-icon">🦶</div>
+    <div><div class="ms-title">Orthopedic Appointment</div><div class="ms-date">July 16, 2026+</div><div class="ms-desc">X-ray, hardware assessment, surgery discussion. Insurance pays 90%. You pay ~10% only.</div><span class="tag t-soon">Upcoming</span></div>
+  </div>
+  <div class="ms">
+    <div class="ms-icon">✈️</div>
+    <div><div class="ms-title">Nepal Option</div><div class="ms-date">Summer 2026 (Backup)</div><div class="ms-desc">If you save enough over summer, going to Nepal for hardware removal is cheaper. Keep as backup plan.</div><span class="tag t-soon">Backup</span></div>
+  </div>
+</div>
+
+<!-- INSURANCE -->
+
+<div class="panel" id="panel-ins">
+  <div class="icard">
+    <div class="icard-title">Now → July 15 (Preexisting)</div>
+    <div class="irow"><div class="ikey">Status</div><div class="ival o">Limited Coverage</div></div>
+    <div class="irow"><div class="ikey">Max Covered</div><div class="ival o">$5,000 only</div></div>
+    <div class="irow"><div class="ikey">Action</div><div class="ival">Student Health only (FREE)</div></div>
+  </div>
+  <div class="icard">
+    <div class="icard-title">After July 15 🎉</div>
+    <div class="irow"><div class="ikey">You Pay</div><div class="ival g">10% only</div></div>
+    <div class="irow"><div class="ikey">Coverage Limit</div><div class="ival g">$500,000</div></div>
+    <div class="irow"><div class="ikey">Preauth Needed</div><div class="ival g">No — just go</div></div>
+  </div>
+  <div class="icard">
+    <div class="icard-title">Estimated Costs (After July 15)</div>
+    <div class="irow"><div class="ikey">Ortho visit</div><div class="ival">~$300 total → You pay ~$30</div></div>
+    <div class="irow"><div class="ikey">X-ray</div><div class="ival">~$400 total → You pay ~$40</div></div>
+    <div class="irow"><div class="ikey">Hardware surgery</div><div class="ival">~$15,000 → You pay ~$1,500</div></div>
+  </div>
+  <div class="script"><strong>📞 What to say at Student Health (this week)</strong>"I had a calcaneus fracture surgery in November 2023. I have a plate and screws in my heel. I'm still limping after 2 years. Can I get examined and get a referral letter for orthopedics after July 15th when my insurance preexisting period ends?"</div>
+  <div class="script" style="border-color:#00e5a050;background:#00e5a008;"><strong style="color:var(--accent)">📞 What to say booking orthopedics (after July 15)</strong>"I'm a Truman State student with international insurance. My preexisting period ended July 15th. I had a calcaneus fracture surgery in 2023 and need a follow-up orthopedic evaluation and X-ray."</div>
+</div>
+
+<!-- INSTALL -->
+
+<div class="panel" id="panel-install">
+  <div class="install-card">
+    <div class="install-header">
+      <h3>📱 Add This App to Your Home Screen</h3>
+      <p>Works offline · No app store needed · Free forever</p>
+    </div>
+    <div class="install-steps">
+      <div style="margin-bottom:14px"><span class="os-badge ios">iPhone / Safari</span>
+        <div class="istep"><div class="istep-n">1</div><div class="istep-text">Open this file in <em>Safari</em> browser (not Chrome). Tap the <em>Share button</em> at the bottom — it looks like a box with an arrow pointing up ↑</div></div>
+        <div class="istep"><div class="istep-n">2</div><div class="istep-text">Scroll down in the share menu and tap <em>"Add to Home Screen"</em></div></div>
+        <div class="istep"><div class="istep-n">3</div><div class="istep-text">Change the name to <em>"MJ Recovery"</em> then tap <em>Add</em> in the top right</div></div>
+        <div class="istep"><div class="istep-n">4</div><div class="istep-text">Done! You'll see the app icon on your home screen. Tap it to open like any app — works offline too.</div></div>
+      </div>
+      <div><span class="os-badge android">Android / Chrome</span>
+        <div class="istep"><div class="istep-n">1</div><div class="istep-text">Open this file in <em>Chrome</em> browser. Tap the <em>three dots menu</em> (⋮) in the top right corner</div></div>
+        <div class="istep"><div class="istep-n">2</div><div class="istep-text">Tap <em>"Add to Home screen"</em> or <em>"Install app"</em> from the menu</div></div>
+        <div class="istep"><div class="istep-n">3</div><div class="istep-text">Tap <em>Add</em> when the popup appears. The app icon will appear on your home screen.</div></div>
+        <div class="istep"><div class="istep-n">4</div><div class="istep-text">Tap it anytime to open your recovery tracker — it opens fullscreen like a real app!</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="install-card">
+    <div class="install-header">
+      <h3>💾 How to Save the File First</h3>
+      <p>Do this before adding to home screen</p>
+    </div>
+    <div class="install-steps">
+      <div class="istep"><div class="istep-n">1</div><div class="istep-text">In Claude, tap the <em>download button</em> on the file card above to save the HTML file to your phone</div></div>
+      <div class="istep"><div class="istep-n">2</div><div class="istep-text">Go to your <em>Files app</em> (iPhone) or <em>Downloads folder</em> (Android) and find <em>mj_recovery_app.html</em></div></div>
+      <div class="istep"><div class="istep-n">3</div><div class="istep-text">Tap the file — it will open in your browser. Then follow the steps above to add it to your home screen.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='mj_app_v2';
+const START=new Date('2026-04-08');
+const END=new Date('2026-07-15');
+const EXS=['e1','e2','e3','e4','e5','e6','e7','e8'];
+
+function getToday(){return new Date().toISOString().split('T')[0];}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{};}catch{return {};}}
+function save(d){localStorage.setItem(KEY,JSON.stringify(d));}
+
+function tab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',['ex','ms','ins','install'][i]===name);
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function toggleCard(id){
+  const body=document.getElementById('body-'+id);
+  const arr=document.getElementById('arr-'+id);
+  const open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  arr.classList.toggle('open',!open);
+}
+
+function checkEx(e,id){
+  e.stopPropagation();
+  const data=load();
+  const today=getToday();
+  if(!data[today])data[today]={};
+  data[today][id]=!data[today][id];
+  save(data);
+  updateUI();
+}
+
+function resetToday(){
+  const data=load();
+  data[getToday()]={};
+  save(data);
+  updateUI();
+}
+
+function calcStreak(data){
+  let s=0,d=new Date();
+  for(let i=0;i<200;i++){
+    const k=d.toISOString().split('T')[0];
+    const day=data[k]||{};
+    if(EXS.filter(e=>day[e]).length>=6){s++;d.setDate(d.getDate()-1);}
+    else break;
+  }
+  return s;
+}
+
+function updateUI(){
+  const data=load();
+  const today=getToday();
+  const td=data[today]||{};
+
+  // countdown
+  const diff=Math.ceil((END-new Date())/(1000*60*60*24));
+  document.getElementById('daysLeft').textContent=Math.max(0,diff);
+
+  // stats
+  const doneDays=Object.keys(data).filter(k=>EXS.filter(e=>data[k][e]).length>=6).length;
+  const elapsed=Math.max(0,Math.ceil((new Date()-START)/(1000*60*60*24)));
+  const pct=Math.min(100,Math.round((elapsed/98)*100));
+  document.getElementById('sDone').textContent=doneDays;
+  document.getElementById('sStreak').textContent=calcStreak(data);
+  document.getElementById('sPct').textContent=pct+'%';
+  document.getElementById('mainBar').style.width=pct+'%';
+
+  // checkboxes
+  EXS.forEach(id=>{
+    const chk=document.getElementById('chk-'+id);
+    const nm=document.getElementById('nm-'+id);
+    const card=document.getElementById('card-'+id);
+    if(!chk)return;
+    const on=!!td[id];
+    chk.classList.toggle('on',on);
+    nm.classList.toggle('done',on);
+    card.classList.toggle('checked',on);
+  });
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
